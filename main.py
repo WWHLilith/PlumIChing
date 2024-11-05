@@ -1,3 +1,4 @@
+import math
 from enum import Enum, unique
 
 
@@ -377,7 +378,7 @@ sixty_four_diagrams_info = {
         meaning="分裂",
         description="睽卦象征分裂，提醒寻求和谐与团结。"
     ),
-ESixtyFourDiagrams.Kan_Zhen: SixtyFourDiagramInfo(
+    ESixtyFourDiagrams.Kan_Zhen: SixtyFourDiagramInfo(
         name="水雷屯",
         statement="亨，利贞。",
         meaning="屯有阻碍",
@@ -432,10 +433,10 @@ ESixtyFourDiagrams.Kan_Zhen: SixtyFourDiagramInfo(
         description="否卦象征隔绝与否定，提醒人们在冲突中保持冷静和理智。"
     ),
     ESixtyFourDiagrams.Li_Qian: SixtyFourDiagramInfo(
-        name="天火同人",
-        statement="亨，利见大人。",
-        meaning="同心",
-        description="同人卦象征团结，强调在共同目标下的合作与支持。"
+        name="火天大有",
+        statement="元亨。",
+        meaning="大有",
+        description="大有卦象征极大的成就与繁荣，强调德行的重要性，只有具备德行的人才能长久持有财富与地位。"
     ),
     ESixtyFourDiagrams.Dui_Zhen: SixtyFourDiagramInfo(
         name="泽雷随",
@@ -569,9 +570,9 @@ def sepSixtyFourDiagrams(origin):
 
 #根据本卦获取互卦
 def getHuDiagram(ben):
-    shang = EDiagrams(ben.value & 0b001110 >> 1)
-    xia = EDiagrams(ben.value & 0b011100 >> 2)
-    return ESixtyFourDiagrams(combineDiagrams(shang, xia))
+    shang = EDiagrams(ben.value >> 1 & 0b000111)
+    xia = EDiagrams(ben.value >> 2 & 0b000111)
+    return getSixtyFourDiagramFromTwo(shang, xia)
 
 #根据本卦和爻动获取变卦
 def getBianDiagram(ben, yao):
@@ -584,27 +585,34 @@ def rotate_right(value, bits, total_bits):
     return (value >> bits) | (value << (total_bits - bits) & ((1 << total_bits) - 1))
 
 
-def main():
-    for name, member in ESixtyFourDiagrams.__members__.items():
-        shang, xia = sepSixtyFourDiagrams(member)
-        shang = getDiagramName(shang)
-        xia = getDiagramName(xia)
-        print("\n")
-        print("枚举:" + name + "\n上：" + shang + " 下：" + xia)
-        sixtyFourName = getSixtyFourDiagramName(member)
-        print("本卦：" + sixtyFourName)
-
-        hu = getHuDiagram(member)
-        huName = getSixtyFourDiagramName(hu)
-        print("互卦：" + huName)
-
-        for i in range(6):
-            yao = i + 1
-            bian = getBianDiagram(member, yao)
-            bianName = getSixtyFourDiagramName(bian)
-            print(str(yao) + "爻变卦： " + bianName)
+def getDiagramFromNum(number):
+    n = number % 8
+    return EDiagrams(8 - n)
 
 
+def getSixtyFourDiagramFromTwo(shang, xia):
+    return ESixtyFourDiagrams(combineDiagrams(shang, xia))
 
 
-main()
+def getSixtyFourDiagramFromNum(number1, number2):
+    return getSixtyFourDiagramFromTwo(getDiagramFromNum(number1), getDiagramFromNum(number2))
+
+
+def getShiChenFromTime(time):
+    return math.floor((time % 24 + 1) / 2 + 1)
+
+
+def main(number1: int, number2: int, time: int) -> dict:
+    shi_chen = getShiChenFromTime(time)
+    yao = shi_chen % 6
+
+    ben = getSixtyFourDiagramFromNum(number1, number2)
+    hu = getHuDiagram(ben)
+    bian = getBianDiagram(ben, yao)
+
+    return {
+        "ben": getSixtyFourDiagramName(ben),
+        "hu": getSixtyFourDiagramName(hu),
+        "bian": getSixtyFourDiagramName(bian),
+        "yao": yao
+    }
