@@ -604,7 +604,7 @@ def getShiChenFromTime(time):
 
 def main(number1: int, number2: int, time: int) -> dict:
     shi_chen = getShiChenFromTime(time)
-    yao = shi_chen % 6
+    yao = (number1 + number2 + shi_chen) % 6
 
     ben = getSixtyFourDiagramFromNum(number1, number2)
     hu = getHuDiagram(ben)
